@@ -1,0 +1,110 @@
+/* Global styles */
+body, html, #root {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0f172a; /* Dark slate (Tailwind's slate-900) */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Form container */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Auth card styling */
+.bg-white {
+  background: rgba(255, 255, 255, 0.06); /* Elegant glass effect */
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 0 30px rgba(100, 116, 139, 0.2); /* Tailwind slate shadow */
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f1f5f9; /* Tailwind slate-100 */
+}
+
+/* Gradient border glow */
+.bg-white::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(
+    135deg,
+    #6366f1 0%,  /* indigo-500 */
+    transparent 50%,
+    #f59e0b 100%  /* amber-500 */
+  );
+  z-index: -1;
+  border-radius: 22px;
+  filter: blur(6px);
+}
+
+/* Input & select */
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: 1px solid #334155; /* slate-700 */
+  border-radius: 10px;
+  background-color: rgba(30, 41, 59, 0.5); /* slate-800 transparent */
+  color: #e2e8f0; /* slate-200 */
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+input:focus, select:focus {
+  border-color: #818cf8; /* indigo-400 */
+}
+
+input::placeholder {
+  color: #94a3b8; /* slate-400 */
+}
+
+/* Submit button */
+button[type="submit"] {
+  background: linear-gradient(to right, #6366f1, #3b82f6); /* indigo to blue */
+  color: white;
+  border: none;
+  padding: 12px;
+  margin-top: 16px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background: linear-gradient(to right, #4f46e5, #2563eb); /* darker gradient */
+  transform: translateY(-1px);
+}
+
+/* Secondary link buttons */
+button.underline {
+  background: none;
+  border: none;
+  color: #cbd5e1; /* slate-300 */
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: 6px;
+  font-size: 0.9rem;
+}
+
+button.underline:hover {
+  color: #facc15; /* amber-400 */
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .bg-white {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}

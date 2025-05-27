@@ -1,0 +1,97 @@
+/* Global styles */
+body, html, #root {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #000; /* Dark background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Auth box styling */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+.bg-white {
+  background: rgba(255, 255, 255, 0.05); /* glass effect */
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Neon edge border */
+.bg-white::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(
+    135deg,
+    #00ffff 0%,
+    transparent 50%,
+    #ffff00 100%
+  );
+  z-index: -1;
+  border-radius: 22px;
+  filter: blur(5px);
+}
+
+/* Input fields */
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: white;
+  outline: none;
+}
+
+input::placeholder {
+  color: #ccc;
+}
+
+/* Button styles */
+button[type="submit"] {
+  background-color: #00bfff;
+  color: white;
+  border: none;
+  padding: 10px;
+  margin-top: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #009acd;
+}
+
+/* Secondary buttons */
+button.underline {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: 6px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .bg-white {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
