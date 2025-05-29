@@ -1,15 +1,30 @@
-import React from 'react';
-import AuthForm from './AuthForm'; // Ensure the path is correct
+import React, { useState } from 'react';
+import './App.css';
+import AuthForm from './AuthForm';
+import Dashboard from './Dashboard';
 
 function App() {
-  const handleAuth = (formData) => {
-    console.log('Auth Data:', formData);
-    alert(`Welcome, ${formData.username} as ${formData.role}`);
+  const [user, setUser] = useState(null);
+
+  const handleAuth = (data) => {
+    // Store the token in localStorage
+    localStorage.setItem('token', data.token);
+    // Store user data in state
+    setUser(data.user);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-black">
-      <AuthForm onAuth={handleAuth} />
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      {user ? (
+        <Dashboard user={user} onLogout={handleLogout} />
+      ) : (
+        <AuthForm onAuth={handleAuth} />
+      )}
     </div>
   );
 }
