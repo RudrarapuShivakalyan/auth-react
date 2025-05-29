@@ -36,7 +36,7 @@ function AuthForm({ onAuth }) {
           return;
         }
 
-        const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+    const response = await fetch('https://backend-603t.onrender.com/api/auth/forgot-password', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ function AuthForm({ onAuth }) {
         }, 3000);
       } else {
         const endpoint = isRegistering ? 'register' : 'login';
-        const response = await fetch(`http://localhost:5000/api/auth/${endpoint}`, {
+        const response = await fetch(`https://backend-603t.onrender.com/api/auth/${endpoint}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
