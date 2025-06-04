@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { FaUser, FaLock, FaEnvelope, FaUserTag, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaUser, FaLock, FaEnvelope, FaUserTag, FaPhone, FaMapMarkerAlt, FaCheck } from 'react-icons/fa';
 
 const roles = ['Buyer', 'Tenant', 'Owner', 'User', 'Admin', 'Content Creator'];
 
 function AuthForm({ onAuth }) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     name: '',
@@ -36,7 +38,7 @@ function AuthForm({ onAuth }) {
           return;
         }
 
-    const response = await fetch('https://backend-603t.onrender.com/api/auth/forgot-password', {
+        const response = await fetch('https://backend-603t.onrender.com/api/auth/forgot-password', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -54,9 +56,26 @@ function AuthForm({ onAuth }) {
           setIsForgotPassword(false);
           setResetEmail('');
         }, 3000);
-      } else {
-        const endpoint = isRegistering ? 'register' : 'login';
-        const response = await fetch(`https://backend-603t.onrender.com/api/auth/${endpoint}`, {
+      } else if (isVerifying) {
+        const response = await fetch('https://backend-603t.onrender.com/api/auth/verify-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            verificationCode: verificationCode
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || 'Verification failed');
+        }
+
+        setSuccess('Email verified successfully! Proceeding with registration...');
+        // After successful verification, proceed with registration
+        const registerResponse = await fetch('https://backend-603t.onrender.com/api/auth/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -64,31 +83,67 @@ function AuthForm({ onAuth }) {
           body: JSON.stringify(formData),
         });
 
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.message || 'Authentication failed');
+        const registerData = await registerResponse.json();
+        if (!registerResponse.ok) {
+          throw new Error(registerData.message || 'Registration failed');
         }
 
+        setSuccess('Registration successful! You can now log in.');
+        setTimeout(() => {
+          setIsVerifying(false);
+          setIsRegistering(false);
+          setFormData({
+            email: '',
+            name: '',
+            password: '',
+            role: roles[0],
+            phoneNumber: '',
+            address: {
+              street: '',
+              city: '',
+              state: '',
+              zipCode: '',
+              country: ''
+            }
+          });
+        }, 3000);
+      } else {
         if (isRegistering) {
-          setSuccess('Registration successful! You can now log in.');
-          setTimeout(() => {
-            setIsRegistering(false);
-            setFormData({
-              email: '',
-              name: '',
-              password: '',
-              role: roles[0],
-              phoneNumber: '',
-              address: {
-                street: '',
-                city: '',
-                state: '',
-                zipCode: '',
-                country: ''
-              }
-            });
-          }, 3000);
+          // Just proceed with registration
+          const response = await fetch('https://backend-603t.onrender.com/api/auth/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.message || 'Registration failed');
+          }
+
+          setSuccess('Registration successful! Please verify your email.');
+          setIsVerifying(true);
         } else {
+          const response = await fetch('https://backend-603t.onrender.com/api/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.message || 'Authentication failed');
+          }
+
+          if (!data.user.isVerified) {
+            setError('Please verify your email before logging in.');
+            return;
+          }
+
           if (typeof onAuth === 'function') {
             onAuth(data);
           } else {
@@ -98,6 +153,28 @@ function AuthForm({ onAuth }) {
       }
     } catch (error) {
       console.error('Form submission error:', error);
+      setError(error.message);
+    }
+  };
+
+  const handleVerifyEmail = async () => {
+    try {
+      const response = await fetch('https://backend-603t.onrender.com/api/auth/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to send verification code');
+      }
+
+      setSuccess('Verification code sent to your email!');
+      setIsVerifying(true);
+    } catch (error) {
       setError(error.message);
     }
   };
@@ -206,7 +283,7 @@ function AuthForm({ onAuth }) {
   return (
     <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md">
       <h2 className="text-2xl font-semibold mb-4">
-        {isForgotPassword ? 'Reset Password' : isRegistering ? 'Register' : 'Login'}
+        {isForgotPassword ? 'Reset Password' : isVerifying ? 'Verify Email' : isRegistering ? 'Register' : 'Login'}
       </h2>
 
       {error && (
@@ -250,6 +327,36 @@ function AuthForm({ onAuth }) {
               Back to Login
             </button>
           </>
+        ) : isVerifying ? (
+          <>
+            <div className="relative">
+              <FaCheck className="absolute left-3 top-3 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Enter verification code"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                className="w-full border p-2 pl-10 rounded"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded"
+            >
+              Verify & Register
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsVerifying(false);
+                setIsRegistering(false);
+              }}
+              className="text-sm text-gray-600 underline"
+            >
+              Back to Login
+            </button>
+          </>
         ) : (
           <>
             <div className="relative">
@@ -265,34 +372,34 @@ function AuthForm({ onAuth }) {
               />
             </div>
 
-            <div className="relative">
-              <FaUser className="absolute left-3 top-3 text-gray-400" />
-              <input
-                type="text"
-                name="name"
-                placeholder="Full Name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full border p-2 pl-10 rounded"
-                required
-              />
-            </div>
-
-            <div className="relative">
-              <FaLock className="absolute left-3 top-3 text-gray-400" />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full border p-2 pl-10 rounded"
-                required
-              />
-            </div>
-
             {isRegistering && (
               <>
+                <div className="relative">
+                  <FaUser className="absolute left-3 top-3 text-gray-400" />
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Full Name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full border p-2 pl-10 rounded"
+                    required
+                  />
+                </div>
+
+                <div className="relative">
+                  <FaLock className="absolute left-3 top-3 text-gray-400" />
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full border p-2 pl-10 rounded"
+                    required
+                  />
+                </div>
+
                 <div className="relative">
                   <FaUserTag className="absolute left-3 top-3 text-gray-400" />
                   <select
@@ -313,12 +420,37 @@ function AuthForm({ onAuth }) {
               </>
             )}
 
+            {!isRegistering && (
+              <div className="relative">
+                <FaLock className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full border p-2 pl-10 rounded"
+                  required
+                />
+              </div>
+            )}
+
             <button
               type="submit"
               className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded"
             >
               {isRegistering ? 'Register' : 'Login'}
             </button>
+
+            {isRegistering && (
+              <button
+                type="button"
+                onClick={handleVerifyEmail}
+                className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded mb-2"
+              >
+                Send Verification Code
+              </button>
+            )}
 
             <div className="flex justify-between text-sm text-gray-600">
               <button

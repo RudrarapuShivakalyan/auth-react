@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import AuthForm from './AuthForm';
 import Dashboard from './Dashboard';
+import VerifyEmail from './VerifyEmail';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -19,13 +21,23 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      {user ? (
-        <Dashboard user={user} onLogout={handleLogout} />
-      ) : (
-        <AuthForm onAuth={handleAuth} />
-      )}
-    </div>
+    <Router>
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <Routes>
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          <Route
+            path="/"
+            element={
+              user ? (
+                <Dashboard user={user} onLogout={handleLogout} />
+              ) : (
+                <AuthForm onAuth={handleAuth} />
+              )
+            }
+          />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
